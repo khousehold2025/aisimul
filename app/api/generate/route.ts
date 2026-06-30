@@ -14,23 +14,21 @@ export async function POST(req: Request) {
 
     // Gemini 2.5 Flash Image 모델 호출
     const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
-const response = await model.generateContent({
-      contents: [
-        {
-          inlineData: {
-            mimeType: 'image/jpeg',
-            data: roomImage.split(',')[1] // Base64 데이터만 추출
-          }
-        },
-        {
-          inlineData: {
-            mimeType: 'image/png',
-            data: sofaImage.split(',')[1] // 투명 배경 소파 PNG
-          }
-        },
-        `You are an expert interior designer. The first image is a customer's empty or existing living room. The second image is a high-quality sofa PNG with a transparent background. TASK: 1. Place the sofa from the second image NATURALLY into the living room. 2. Detect the floor and perspective of the room, and scale/rotate the sofa to match the perspective perfectly. 3. Generate realistic shadows underneath and behind the sofa based on the room's lighting. 4. DO NOT alter any other parts of the room (walls, windows, other furniture, floor color). 5. Keep the sofa's original design, texture, and color identical. 6. Output ONLY the final rendered room image.`
-      ],
-    });
+    const response = await model.generateContent([
+      {
+        inlineData: {
+          mimeType: 'image/jpeg',
+          data: roomImage.split(',')[1] // Base64 데이터만 추출
+        }
+      },
+      {
+        inlineData: {
+          mimeType: 'image/png',
+          data: sofaImage.split(',')[1] // 투명 배경 소파 PNG
+        }
+      },
+      `You are an expert interior designer. The first image is a customer's empty or existing living room. The second image is a high-quality sofa PNG with a transparent background. TASK: 1. Place the sofa from the second image NATURALLY into the living room. 2. Detect the floor and perspective of the room, and scale/rotate the sofa to match the perspective perfectly. 3. Generate realistic shadows underneath and behind the sofa based on the room's lighting. 4. DO NOT alter any other parts of the room (walls, windows, other furniture, floor color). 5. Keep the sofa's original design, texture, and color identical. 6. Output ONLY the final rendered room image.`
+    ]);
 
     // Gemini가 반환한 이미지 데이터 추출 (Base64 형태)
     const generatedImageBase64 = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
