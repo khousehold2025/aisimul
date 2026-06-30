@@ -45,16 +45,16 @@ export default function RoomAiPage() {
       const data = await res.json();
 
       if (data.success && data.placement) {
-        // 소파 스타일 지정 (% 기준)
+        // [수정] 무조건 부모 박스의 % 기준으로 칼같이 얹어지도록 설정
         setSofaStyle({
           position: 'absolute',
           left: `${data.placement.x}%`,
           top: `${data.placement.y}%`,
           width: `${data.placement.width}%`,
           height: `${data.placement.height}%`,
-          transform: 'translate(-50%, -50%)',
+          transform: 'translate(-50%, -50%)', // 정중앙 매칭
           objectFit: 'contain',
-          zIndex: 10,
+          zIndex: 50,
         });
       } else {
         throw new Error(data.error || '좌표를 가져오지 못했습니다.');
@@ -96,15 +96,15 @@ export default function RoomAiPage() {
       {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
 
       {roomImage && (
-        <div className="border p-4 rounded bg-white shadow-inner">
+        <div className="border p-4 rounded bg-white shadow-inner max-w-2xl mx-auto">
           <h2 className="text-lg font-bold mb-3 text-center">미리보기 결과</h2>
           
-          {/* [교정 핵심] 무조건 거실 이미지 크기만큼만 딱 맞춰 영역을 생성하고 기준점을 지정합니다. */}
-          <div className="relative inline-block w-full max-w-2xl mx-auto overflow-hidden rounded bg-gray-900">
+          {/* [핵심 교정] 블록 정렬을 맞추고 확실하게 relative 기준점을 강제 주입했습니다. */}
+          <div className="relative w-full overflow-hidden rounded bg-gray-900" style={{ position: 'relative' }}>
             {/* 배경 거실 이미지 */}
             <img src={roomImage} alt="Final Room" className="w-full h-auto block" />
             
-            {/* 거실 이미지 틀 밖으로 절대 못 나가게 박제된 소파 */}
+            {/* 이제 거실 이미지 프레임 밖으로 절대 탈출하지 못하는 소파 레이어 */}
             {sofaImage && sofaStyle && (
               <img src={sofaImage} alt="Placed Sofa" style={sofaStyle} />
             )}
