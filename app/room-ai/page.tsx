@@ -1,116 +1,112 @@
 'use client';
 
-import { useState, ChangeEvent } from 'react';
-import BeforeAfterSlider from '../../components/BeforeAfterSlider';
+import { useState } from 'react';
 
 export default function RoomAiPage() {
-  const [roomImg, setRoomImg] = useState<string | null>(null);
-  const [sofaImg, setSofaImg] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [resultImg, setResultImg] = useState<string | null>(null);
+  const [roomImage, setRoomImage] = useState<string | null>(null);
+  const [sofaImage, setSofaImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // 구글 AI가 계산한 좌표를 저장할 상태(State)
+  const [sofaStyle, setSofaStyle] = useState<React.CSSProperties | null>(null);
 
-  // 이미지 파일을 Base64로 변환하는 함수
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, type: 'room' | 'sofa') => {
+  // 이미지 업로드 처리 (Base64 변환)
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'room' | 'sofa') => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (type === 'room') setRoomImg(reader.result as string);
-        if (type === 'sofa') setSofaImg(reader.result as string);
+        if (type === 'room') setRoomImage(reader.result as string);
+        if (type === 'sofa') setSofaImage(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleGenerate = async () => {
-    if (!roomImg || !sofaImg) return alert('두 사진을 모두 업로드해주세요!');
-    
-    setLoading(true);
-    setResultImg(null);
+  // 배치하기 버튼 클릭 시 구글 Flow 호출
+  const handleArrange = async () => {
+    if (!roomImage || !sofaImage) return;
+    setIsLoading(true);
+    setError(null);
+    setSofaStyle(null);
 
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomImage: roomImg, sofaImage: sofaImg }),
+        body: JSON.stringify({ roomImage, sofaImage }),
       });
 
       const data = await res.json();
-      if (data.success) {
-        setResultImg(data.resultImage);
+
+      if (data.success && data.placement) {
+        // 백엔드가 계산해 준 % 좌표를 소파 스타일에 그대로 입혀줍니다.
+        setSofaStyle({
+          position: 'absolute',
+          left: `${data.placement.x}%`,
+          top: `${data.placement.y}%`,
+          width: `${data.placement.width}%`,
+          height: `${data.placement.height}%`,
+          transform: 'translate(-50%, -50%)', // 정중앙 기준 정렬
+          pointerEvents: 'auto',
+          cursor: 'move',
+          zIndex: 10
+        });
       } else {
-        alert(data.error || '생성 실패');
+        throw new Error(data.error || '좌표를 가져오지 못했습니다.');
       }
-    } catch (err) {
-      alert('오류가 발생했습니다.');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || '오류가 발생했습니다.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6 text-center">케이하우스홀드 회원전용 - 우리집 소파 미리보기</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* 1. 배경 거실 사진 업로드 */}
-        <div className="border-2 border-dashed p-4 rounded text-center">
-          <p className="font-medium mb-2">1. 우리집 거실 사진 (배경)</p>
-          <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'room')} className="mb-4" />
-          {roomImg && <img src={roomImg} alt="거실" className="h-40 mx-auto object-contain" />}
+        {/* 거실 사진 등록 */}
+        <div className="border p-4 rounded bg-gray-50">
+          <label className="block font-semibold mb-2">1. 내 공간 사진 등록 (거실/방)</label>
+          <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, 'room')} className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+          {roomImage && <img src={roomImage} alt="Room" className="mt-4 max-h-48 object-contain mx-auto rounded" />}
         </div>
 
-        {/* 2. 투명 소파 PNG 사진 업로드 */}
-        <div className="border-2 border-dashed p-4 rounded text-center">
-          <p className="font-medium mb-2">2. 소파 이미지 (투명 PNG)</p>
-          <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'sofa')} className="mb-4" />
-          {sofaImg && <img src={sofaImg} alt="소파" className="h-40 mx-auto object-contain bg-gray-100" />}
+        {/* 소파 사진 등록 */}
+        <div className="border p-4 rounded bg-gray-50">
+          <label className="block font-semibold mb-2">2. 배치할 소파 사진 등록 (PNG 권장)</label>
+          <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, 'sofa')} className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100" />
+          {sofaImage && <img src={sofaImage} alt="Sofa" className="mt-4 max-h-48 object-contain mx-auto rounded" />}
         </div>
       </div>
 
-      {/* 생성 버튼 */}
-      <div className="text-center mb-8">
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="bg-black text-white px-8 py-3 rounded font-bold disabled:bg-gray-400"
-        >
-          {loading ? 'AI가 소파를 배치하는 중... (약 20초)' : '내 공간에 배치하기'}
-        </button>
-      </div>
+      {/* 배치하기 버튼 */}
+      <button
+        onClick={handleArrange}
+        disabled={isLoading || !roomImage || !sofaImage}
+        className="w-full py-3 bg-blue-600 text-white font-bold rounded shadow hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed mb-6 transition"
+      >
+        {isLoading ? 'AI가 배치 공간 분석 및 배치 중...' : '내 공간에 배치하기'}
+      </button>
 
-      
-<!-- 💡 바로 여기에 자바스크립트 코드를 넣으세요! -->
-    <script>
-      const handlePlaceSofa = async () => {
-  console.log("1. 버튼 클릭은 감지됨!"); // <- 이게 콘솔에 찍히는지 확인
-  
-  if (!bgImage || !sofaImage) {
-    console.log("2. 이미지 중 하나가 없어서 여기서 멈춤");
-    return;
-  }
-  
-  console.log("3. API 호출 직전"); // <- 여기까지 도달하는지 확인
-  
-  try {
-    const response = await fetch('/api/room-ai', { ... });
-    console.log("4. API 응답 받음", response);
-  } catch (error) {
-    console.log("에러 발생:", error);
-  }
-};
-</script>
+      {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
 
-      
-      {/* 결과 화면 (Before / After 슬라이더) */}
-      {resultImg && roomImg && (
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4 text-center">배치 결과 확인</h2>
-          <BeforeAfterSlider before={roomImg} after={resultImg} />
-          <div className="text-center mt-4">
-            <a href={resultImg} download="khousehold-sofa-ai.jpg" className="bg-gray-800 text-white px-6 py-2 rounded text-sm">
-              이미지 다운로드
-            </a>
+      {/* 최종 미리보기 화면 (두 이미지가 겹쳐서 렌더링되는 마법 공간) */}
+      {roomImage && (
+        <div className="border p-4 rounded bg-white shadow-inner">
+          <h2 className="text-lg font-bold mb-3 text-center">미리보기 결과</h2>
+          <div className="relative w-full max-w-2xl mx-auto overflow-hidden rounded bg-black flex items-center justify-center">
+            {/* 배경 거실 이미지 */}
+            <img src={roomImage} alt="Final Room" className="w-full h-auto block" />
+            
+            {/* 구글 AI 좌표값을 받아 거실 위에 레이어로 얹어지는 소파 이미지 */}
+            {sofaImage && sofaStyle && (
+              <img src={sofaImage} alt="Placed Sofa" style={sofaStyle} className="transition-all duration-300" />
+            )}
           </div>
         </div>
       )}
