@@ -31,11 +31,11 @@ export async function POST(req: Request) {
           data: sofaImage.split(',')[1]
         }
       },
-      `TASK: Place the sofa from the second image naturally into the living room shown in the first image.
-       1. Detect the floor and perspective of the room, and scale/rotate the sofa to match perfectly.
-       2. Generate realistic shadows underneath and behind the sofa based on the room's lighting.
-       3. DO NOT alter any other parts of the room. Keep the sofa's original design, texture, and color identical.
-       4. Output format instruction: Return a valid JSON object. Inside this JSON, provide the final rendered room image as a base64 string under the property name 'imageBase64'. Do not include any text before or after the JSON. Example response format: {"imageBase64": "..."}`
+          `CRITICAL TASK: Merge the sofa from image 2 into the room in image 1.
+       - Place the sofa naturally on the floor.
+       - Match perspective and lighting.
+       - Output Format: Return ONLY a raw JSON object with a single key 'imageBase64'. Do not write markdown blocks or backticks.
+       Example: {"imageBase64": "your_base64_string_here"}`
     ]);
 
     const response = await result.response;
