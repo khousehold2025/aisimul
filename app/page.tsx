@@ -1,16 +1,12 @@
-import Link from 'next/link';
-
 export default function HomePage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
-      <div className="text-center max-w-md bg-white p-8 rounded-xl shadow-md">
-        <h1 className="text-2xl font-bold mb-4 text-gray-800">케이하우스홀드</h1>
-        <p className="text-gray-600 mb-6">우리집 거실에 어울리는 소파를 AI로 미리 배치해 보세요.</p>
-
-        {/* 클릭하면 room-ai 페이지로 이동 */}
-        <Link href="/room-ai" className="inline-block bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#f9fafb' }}>
+      <div style={{ textAlign: 'center', backgroundColor: '#ffffff', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px', color: '#1f2937' }}>케이하우스홀드 AI</h1>
+        <p style={{ color: '#4b5563', marginBottom: '24px' }}>우리집 거실에 소파를 미리 배치해보세요.</p>
+        <a href="/room-ai" style={{ display: 'inline-block', backgroundColor: '#000000', color: '#ffffff', padding: '12px 24px', borderRadius: '8px', fontWeight: 'bold', textDecoration: 'none' }}>
           소파 미리보기 시작하기
-        </Link>
+        </a>
       </div>
     </div>
   );
