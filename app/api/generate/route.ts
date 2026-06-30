@@ -43,37 +43,29 @@ export async function POST(req: Request) {
     const startIdx = text.indexOf('{');
     const endIdx = text.lastIndexOf('}');
     
-    if (startIdx === -1 || endIdx === -1) {
-      // 구글이 JSON을 안 줬을 때를 대비한 기본값 배치 좌표 (정중앙 바닥 부근)
-      return NextResponse.json({
-        success: true,
-        isCoordinates: true,
-        placement: { x: 35, y: 55, width: 30, height: 25 },
-        roomImage,
-        sofaImage
-      });
+    let placement = { x: 35, y: 55, width: 30, height: 25 }; // 기본값 설정
+    
+    if (startIdx !== -1 && endIdx !== -1) {
+      const cleanJsonText = text.substring(startIdx, endIdx + 1);
+      placement = JSON.parse(cleanJsonText);
     }
-
-    const cleanJsonText = text.substring(startIdx, endIdx + 1);
-    const placement = JSON.parse(cleanJsonText);
 
     return NextResponse.json({
       success: true,
       isCoordinates: true,
       placement,
-      roomImage,
-      sofaImage
+      roomImage: roomImage,
+      sofaImage: sofaImage
     });
 
   } catch (error: any) {
     console.error(error);
-    // 에러 발생 시에도 화면이 먹통 되지 않도록 기본 좌표를 들려 보냅니다.
+    // 에러 발생 시 튕기지 않도록 고정값 문자열로 안전하게 변환해서 반환합니다.
     return NextResponse.json({
       success: true,
       isCoordinates: true,
       placement: { x: 35, y: 55, width: 30, height: 25 },
-      roomImage,
-      sofaImage
+      error: error.message || '좌표 계산 중 예외 발생'
     });
   }
 }
