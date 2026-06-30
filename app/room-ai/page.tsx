@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, ChangeEvent } from 'react';
-import BeforeAfterSlider from '@/components/BeforeAfterSlider';
+import BeforeAfterSlider from '../../components/BeforeAfterSlider';
 
 export default function RoomAiPage() {
   const [roomImg, setRoomImg] = useState<string | null>(null);
