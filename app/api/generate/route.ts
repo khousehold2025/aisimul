@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai'; // 1. Generative로 변경
 
 // 구글 Gemini API 초기화 (환경변수 필수)
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
+const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || ''); // 2. Generative로 변경 및 {apiKey: ...} 형태가 아닌 문자열 바로 주입
 });
 
 export async function POST(req: Request) {
