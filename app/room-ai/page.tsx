@@ -8,7 +8,7 @@ export default function RoomAiPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // 구글 AI가 계산한 좌표를 저장할 상태(State)
+  // 구글 AI가 계산한 좌표를 저장할 스타일 상태
   const [sofaStyle, setSofaStyle] = useState<React.CSSProperties | null>(null);
 
   // 이미지 업로드 처리 (Base64 변환)
@@ -17,8 +17,14 @@ export default function RoomAiPage() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (type === 'room') setRoomImage(reader.result as string);
-        if (type === 'sofa') setSofaImage(reader.result as string);
+        if (type === 'room') {
+          setRoomImage(reader.result as string);
+          setSofaStyle(null); // 새 사진 올리면 좌표 초기화
+        }
+        if (type === 'sofa') {
+          setSofaImage(reader.result as string);
+          setSofaStyle(null);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -41,17 +47,16 @@ export default function RoomAiPage() {
       const data = await res.json();
 
       if (data.success && data.placement) {
-        // 백엔드가 계산해 준 % 좌표를 소파 스타일에 그대로 입혀줍니다.
+        // [수정] 거실 이미지 내부에 완벽하게 종속되도록 절대 좌표 스타일 세팅
         setSofaStyle({
           position: 'absolute',
           left: `${data.placement.x}%`,
           top: `${data.placement.y}%`,
           width: `${data.placement.width}%`,
           height: `${data.placement.height}%`,
-          transform: 'translate(-50%, -50%)', // 정중앙 기준 정렬
-          pointerEvents: 'auto',
-          cursor: 'move',
-          zIndex: 10
+          transform: 'translate(-50%, -50%)', // 센터 정렬
+          objectFit: 'contain', // [핵심] 소파 비율이 절대 위아래로 깨지지 않고 찌그러짐을 방지합니다.
+          zIndex: 10,
         });
       } else {
         throw new Error(data.error || '좌표를 가져오지 못했습니다.');
@@ -95,17 +100,19 @@ export default function RoomAiPage() {
 
       {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
 
-      {/* 최종 미리보기 화면 (두 이미지가 겹쳐서 렌더링되는 마법 공간) */}
+      {/* 최종 미리보기 화면 */}
       {roomImage && (
         <div className="border p-4 rounded bg-white shadow-inner">
           <h2 className="text-lg font-bold mb-3 text-center">미리보기 결과</h2>
-          <div className="relative w-full max-w-2xl mx-auto overflow-hidden rounded bg-black flex items-center justify-center">
+          
+          {/* [핵심 수정] relative 속성을 이 박스에 확실히 주어, 소파 이미지가 이 안에서만 노도록 가둡니다. */}
+          <div className="relative w-full max-w-2xl mx-auto overflow-hidden rounded bg-gray-900">
             {/* 배경 거실 이미지 */}
             <img src={roomImage} alt="Final Room" className="w-full h-auto block" />
             
-            {/* 구글 AI 좌표값을 받아 거실 위에 레이어로 얹어지는 소파 이미지 */}
+            {/* 거실 이미지 좌표계 내부에 정확히 가두어진 소파 레이어 */}
             {sofaImage && sofaStyle && (
-              <img src={sofaImage} alt="Placed Sofa" style={sofaStyle} className="transition-all duration-300" />
+              <img src={sofaImage} alt="Placed Sofa" style={sofaStyle} />
             )}
           </div>
         </div>
