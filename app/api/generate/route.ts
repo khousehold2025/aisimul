@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI } from '@google/generative-ai';
 
 // 구글 Gemini API 초기화 (환경변수 필수)
 const ai = new GoogleGenAI({
