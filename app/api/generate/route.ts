@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, Type } from '@google/generative-ai';
 
 // 구글 Gemini API 초기화
 const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -15,14 +15,17 @@ export async function POST(req: Request) {
     // 1. 이미지 출력을 안정적으로 지원하는 gemini-2.5-flash 모델을 가져옵니다.
     const model = ai.getGenerativeModel({ 
       model: 'gemini-2.5-flash',
-      // 구글에 텍스트가 아닌 JSON 구조체(그 안에 base64 이미지 데이터)로만 대답하도록 강제합니다.
+      // [수정] 타입스크립트 에러를 해결하기 위해 Type.OBJECT, Type.STRING 규격을 사용합니다.
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: {
-          type: "object",
+          type: Type.OBJECT,
           properties: {
-            success: { type: "boolean" },
-            imageBase64: { type: "string", description: "The final rendered room image containing the sofa, encoded in base64 without data URI prefix" }
+            success: { type: Type.BOOLEAN },
+            imageBase64: { 
+              type: Type.STRING, 
+              description: "The final rendered room image containing the sofa, encoded in base64 without data URI prefix" 
+            }
           },
           required: ["imageBase64"]
         }
