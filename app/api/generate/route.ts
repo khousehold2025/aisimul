@@ -12,8 +12,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '공간 사진과 소파 이미지가 모두 필요합니다.' }, { status: 400 });
     }
 
-    // [수정] 복잡한 이미지 합성을 안정적으로 지원하는 gemini-1.5-pro 모델로 변경합니다.
-    const model = ai.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    // [수정] v1beta API에서 이미지 처리를 확실하게 지원하는 gemini-1.5-flash-latest 모델로 지정합니다.
+    const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
     
     const result = await model.generateContent([
       {
