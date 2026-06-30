@@ -13,8 +13,8 @@ export async function POST(req: Request) {
     }
 
     // Gemini 2.5 Flash Image 모델 호출
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
+    const model = ai.getGenerativeModel({ model: 'gemini-2.5-flash-image' });
+const response = await model.generateContent({
       contents: [
         {
           inlineData: {
