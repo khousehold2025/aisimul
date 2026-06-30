@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai'; // 1. Generative로 변경
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// 구글 Gemini API 초기화 (환경변수 필수)
-const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || ''); // 2. Generative로 변경 및 {apiKey: ...} 형태가 아닌 문자열 바로 주입
-});
+// 구글 Gemini API 초기화 (오타 수정 완료)
+const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
@@ -14,7 +13,6 @@ export async function POST(req: Request) {
     }
 
     // Gemini 2.5 Flash Image 모델 호출
-    // 이미지 데이터는 Base64 형태(data:image/jpeg;base64,...)로 프론트에서 넘어온다고 가정합니다.
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: [
@@ -30,17 +28,7 @@ export async function POST(req: Request) {
             data: sofaImage.split(',')[1] // 투명 배경 소파 PNG
           }
         },
-        `You are an expert interior designer. 
-         The first image is a customer's empty or existing living room. 
-         The second image is a high-quality sofa PNG with a transparent background.
-         
-         TASK:
-         1. Place the sofa from the second image NATURALLY into the living room.
-         2. Detect the floor and perspective of the room, and scale/rotate the sofa to match the perspective perfectly.
-         3. Generate realistic shadows underneath and behind the sofa based on the room's lighting.
-         4. DO NOT alter any other parts of the room (walls, windows, other furniture, floor color).
-         5. Keep the sofa's original design, texture, and color identical.
-         6. Output ONLY the final rendered room image.`
+        `You are an expert interior designer. The first image is a customer's empty or existing living room. The second image is a high-quality sofa PNG with a transparent background. TASK: 1. Place the sofa from the second image NATURALLY into the living room. 2. Detect the floor and perspective of the room, and scale/rotate the sofa to match the perspective perfectly. 3. Generate realistic shadows underneath and behind the sofa based on the room's lighting. 4. DO NOT alter any other parts of the room (walls, windows, other furniture, floor color). 5. Keep the sofa's original design, texture, and color identical. 6. Output ONLY the final rendered room image.`
       ],
     });
 
@@ -51,9 +39,9 @@ export async function POST(req: Request) {
       throw new Error('AI 이미지 생성에 실패했습니다.');
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      resultImage: `data:image/jpeg;base64,${generatedImageBase64}` 
+    return NextResponse.json({
+      success: true,
+      resultImage: `data:image/jpeg;base64,${generatedImageBase64}`
     });
 
   } catch (error: any) {
