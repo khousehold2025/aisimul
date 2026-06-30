@@ -8,10 +8,9 @@ export default function RoomAiPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // 구글 AI가 계산한 좌표를 저장할 스타일 상태
+  // 구글 AI 좌표 스타일 상태
   const [sofaStyle, setSofaStyle] = useState<React.CSSProperties | null>(null);
 
-  // 이미지 업로드 처리 (Base64 변환)
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'room' | 'sofa') => {
     const file = e.target.files?.[0];
     if (file) {
@@ -19,7 +18,7 @@ export default function RoomAiPage() {
       reader.onloadend = () => {
         if (type === 'room') {
           setRoomImage(reader.result as string);
-          setSofaStyle(null); // 새 사진 올리면 좌표 초기화
+          setSofaStyle(null);
         }
         if (type === 'sofa') {
           setSofaImage(reader.result as string);
@@ -30,7 +29,6 @@ export default function RoomAiPage() {
     }
   };
 
-  // 배치하기 버튼 클릭 시 구글 Flow 호출
   const handleArrange = async () => {
     if (!roomImage || !sofaImage) return;
     setIsLoading(true);
@@ -47,15 +45,15 @@ export default function RoomAiPage() {
       const data = await res.json();
 
       if (data.success && data.placement) {
-        // [수정] 거실 이미지 내부에 완벽하게 종속되도록 절대 좌표 스타일 세팅
+        // 소파 스타일 지정 (% 기준)
         setSofaStyle({
           position: 'absolute',
           left: `${data.placement.x}%`,
           top: `${data.placement.y}%`,
           width: `${data.placement.width}%`,
           height: `${data.placement.height}%`,
-          transform: 'translate(-50%, -50%)', // 센터 정렬
-          objectFit: 'contain', // [핵심] 소파 비율이 절대 위아래로 깨지지 않고 찌그러짐을 방지합니다.
+          transform: 'translate(-50%, -50%)',
+          objectFit: 'contain',
           zIndex: 10,
         });
       } else {
@@ -74,14 +72,12 @@ export default function RoomAiPage() {
       <h1 className="text-2xl font-bold mb-6 text-center">케이하우스홀드 회원전용 - 우리집 소파 미리보기</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* 거실 사진 등록 */}
         <div className="border p-4 rounded bg-gray-50">
           <label className="block font-semibold mb-2">1. 내 공간 사진 등록 (거실/방)</label>
           <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, 'room')} className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
           {roomImage && <img src={roomImage} alt="Room" className="mt-4 max-h-48 object-contain mx-auto rounded" />}
         </div>
 
-        {/* 소파 사진 등록 */}
         <div className="border p-4 rounded bg-gray-50">
           <label className="block font-semibold mb-2">2. 배치할 소파 사진 등록 (PNG 권장)</label>
           <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, 'sofa')} className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100" />
@@ -89,7 +85,6 @@ export default function RoomAiPage() {
         </div>
       </div>
 
-      {/* 배치하기 버튼 */}
       <button
         onClick={handleArrange}
         disabled={isLoading || !roomImage || !sofaImage}
@@ -100,17 +95,16 @@ export default function RoomAiPage() {
 
       {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
 
-      {/* 최종 미리보기 화면 */}
       {roomImage && (
         <div className="border p-4 rounded bg-white shadow-inner">
           <h2 className="text-lg font-bold mb-3 text-center">미리보기 결과</h2>
           
-          {/* [핵심 수정] relative 속성을 이 박스에 확실히 주어, 소파 이미지가 이 안에서만 노도록 가둡니다. */}
-          <div className="relative w-full max-w-2xl mx-auto overflow-hidden rounded bg-gray-900">
+          {/* [교정 핵심] 무조건 거실 이미지 크기만큼만 딱 맞춰 영역을 생성하고 기준점을 지정합니다. */}
+          <div className="relative inline-block w-full max-w-2xl mx-auto overflow-hidden rounded bg-gray-900">
             {/* 배경 거실 이미지 */}
             <img src={roomImage} alt="Final Room" className="w-full h-auto block" />
             
-            {/* 거실 이미지 좌표계 내부에 정확히 가두어진 소파 레이어 */}
+            {/* 거실 이미지 틀 밖으로 절대 못 나가게 박제된 소파 */}
             {sofaImage && sofaStyle && (
               <img src={sofaImage} alt="Placed Sofa" style={sofaStyle} />
             )}
