@@ -79,6 +79,29 @@ export default function RoomAiPage() {
         </button>
       </div>
 
+      
+<!-- 💡 바로 여기에 자바스크립트 코드를 넣으세요! -->
+    <script>
+      const handlePlaceSofa = async () => {
+  console.log("1. 버튼 클릭은 감지됨!"); // <- 이게 콘솔에 찍히는지 확인
+  
+  if (!bgImage || !sofaImage) {
+    console.log("2. 이미지 중 하나가 없어서 여기서 멈춤");
+    return;
+  }
+  
+  console.log("3. API 호출 직전"); // <- 여기까지 도달하는지 확인
+  
+  try {
+    const response = await fetch('/api/room-ai', { ... });
+    console.log("4. API 응답 받음", response);
+  } catch (error) {
+    console.log("에러 발생:", error);
+  }
+};
+</script>
+
+      
       {/* 결과 화면 (Before / After 슬라이더) */}
       {resultImg && roomImg && (
         <div className="mt-8">
